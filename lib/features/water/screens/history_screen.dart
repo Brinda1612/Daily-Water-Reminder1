@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_task/l10n/app_localizations.dart';
 import '../bloc/water_bloc.dart';
 import '../bloc/water_state.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Intake History'),
+        title: Text(AppLocalizations.of(context)!.intakeHistory),
       ),
       body: BlocBuilder<WaterBloc, WaterState>(
         builder: (context, state) {
@@ -24,13 +25,13 @@ class HistoryScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.water_drop_outlined, size: 60, color: Colors.blue[100]),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No history yet',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  Text(
+                    AppLocalizations.of(context)!.noHistory,
+                    style: const TextStyle(fontSize: 18, color: Colors.black54),
                   ),
-                  const Text(
-                    'Start drinking to track progress! 💧',
-                    style: TextStyle(fontSize: 14, color: Colors.black38),
+                  Text(
+                    AppLocalizations.of(context)!.startDrinking,
+                    style: const TextStyle(fontSize: 14, color: Colors.black38),
                   ),
                 ],
               ),
@@ -70,7 +71,7 @@ class HistoryScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${item.intake} / ${item.goal} ml',
+                              '${item.intake} / ${item.goal} ${AppLocalizations.of(context)!.ml}',
                               style: const TextStyle(color: Colors.black54),
                             ),
                           ],

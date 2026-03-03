@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_task/l10n/app_localizations.dart';
 import '../bloc/water_bloc.dart';
 import '../bloc/water_event.dart';
 
@@ -158,8 +159,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          const Text(
-            'Stay Hydrated,\nStay Healthy',
+          Text(
+            AppLocalizations.of(context)!.onboardingWelcome,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 32,
@@ -169,8 +170,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Track your daily water intake and keep\nyour body functioning at its best.',
+          Text(
+            AppLocalizations.of(context)!.onboardingSubtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -191,31 +192,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'About You',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.aboutYou,
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1A1A1A),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'This helps us calculate your goal.',
-              style: TextStyle(fontSize: 14, color: Colors.black54),
+            Text(
+              AppLocalizations.of(context)!.aboutYouSubtitle,
+              style: const TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 32),
             _buildTextField(
               controller: _weightController,
-              label: 'Weight',
-              suffix: 'kg',
+              label: AppLocalizations.of(context)!.weight,
+              suffix: AppLocalizations.of(context)!.kg,
               icon: Icons.monitor_weight_outlined,
             ),
             const SizedBox(height: 24),
             _buildTextField(
               controller: _heightController,
-              label: 'Height',
-              suffix: 'cm',
+              label: AppLocalizations.of(context)!.height,
+              suffix: AppLocalizations.of(context)!.cm,
               icon: Icons.height_outlined,
             ),
           ],
@@ -249,8 +250,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           labelStyle: const TextStyle(fontWeight: FontWeight.normal, color: Colors.grey),
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) return 'Required';
-          if (double.tryParse(value) == null) return 'Invalid';
+          if (value == null || value.isEmpty) return AppLocalizations.of(context)!.required;
+          if (double.tryParse(value) == null) return AppLocalizations.of(context)!.invalid;
           return null;
         },
       ),
@@ -266,18 +267,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Personalized Plan Generated!',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.personalizedPlan,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.blue,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Your Daily Goal',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.yourDailyGoal,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -307,9 +308,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  'ml / day',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.mlPerDay,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white70,
@@ -319,8 +320,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          const Text(
-            'We recommend this targets based\non your body stats.',
+          Text(
+            AppLocalizations.of(context)!.recommendTarget,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
@@ -357,7 +358,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 shadowColor: Colors.blue.withOpacity(0.4),
               ),
               child: Text(
-                _currentPage < 2 ? 'Next' : 'Finish',
+                _currentPage < 2 ? AppLocalizations.of(context)!.next : AppLocalizations.of(context)!.finish,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),

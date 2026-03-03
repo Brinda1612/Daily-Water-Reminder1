@@ -5,7 +5,11 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
-  static const MethodChannel _settingsChannel = MethodChannel('com.example.smart_task/settings');
+  static const String _notificationIcon = 'launcher_icon';
+  static const String _fallbackIcon = 'ic_launcher';
+  static String _validatedIcon = _notificationIcon;
+
+  static const MethodChannel _settingsChannel = MethodChannel('com.example.daily_water_reminder/settings');
   static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
@@ -13,7 +17,7 @@ class NotificationService {
     // If it fails, the app will catch it in main.dart or here.
     try {
       const AndroidInitializationSettings androidSettings =
-          AndroidInitializationSettings('launcher_icon');
+          AndroidInitializationSettings(_notificationIcon);
       const DarwinInitializationSettings iosSettings =
           DarwinInitializationSettings();
 
@@ -28,21 +32,24 @@ class NotificationService {
           // Handle notification tap
         },
       );
+      _validatedIcon = _notificationIcon;
       
       // Ensure channel is created during initialization
       await _createChannel();
-      print('Notification service initialized and channel created.');
+      print('Notification service initialized with $_notificationIcon');
     } catch (e) {
-      print('Notification initialization failed with launcher_icon, trying fallback: $e');
+      print('Notification initialization failed with $_notificationIcon, trying fallback: $e');
       // Fallback to default flutter icon if launcher_icon is still problematic
       try {
         const AndroidInitializationSettings fallbackSettings =
-            AndroidInitializationSettings('ic_launcher');
+            AndroidInitializationSettings(_fallbackIcon);
         const InitializationSettings initSettings = InitializationSettings(
           android: fallbackSettings,
           iOS: DarwinInitializationSettings(),
         );
         await _notificationsPlugin.initialize(initSettings);
+        _validatedIcon = _fallbackIcon;
+        print('Notification service initialized with fallback: $_fallbackIcon');
       } catch (fallbackError) {
         print('Notification initialization failed completely: $fallbackError');
       }
@@ -131,22 +138,22 @@ class NotificationService {
   static Future<void> scheduleReminders({int? intervalMinutes, int? intervalHours}) async {
     final int minutes = intervalMinutes ?? (intervalHours ?? 1) * 60;
     
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'water_reminder_channel_v3',
       'Water Reminders (Critical)',
       channelDescription: 'Priority reminders to drink water',
       importance: Importance.max,
       priority: Priority.high,
-      icon: 'launcher_icon',
+      icon: _validatedIcon,
       fullScreenIntent: true,
       category: AndroidNotificationCategory.reminder,
       visibility: NotificationVisibility.public,
       ticker: 'Time to drink water',
     );
 
-    const NotificationDetails notificationDetails = NotificationDetails(
+    final NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
@@ -190,19 +197,19 @@ class NotificationService {
   }
 
   static Future<void> showTestAlarm() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'water_reminder_channel_v3',
       'Water Reminders (Critical)',
       channelDescription: 'Priority reminders to drink water',
       importance: Importance.max,
       priority: Priority.high,
-      icon: 'launcher_icon',
+      icon: _validatedIcon,
       fullScreenIntent: true,
       category: AndroidNotificationCategory.reminder,
       visibility: NotificationVisibility.public,
     );
 
-    const NotificationDetails notificationDetails = NotificationDetails(android: androidDetails);
+    final NotificationDetails notificationDetails = NotificationDetails(android: androidDetails);
     
     final scheduledTime = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 10));
     print('DEBUG: Test alarm scheduled for: $scheduledTime (in 10 seconds)');
@@ -226,17 +233,17 @@ class NotificationService {
   }
 
   static Future<void> showImmediateNotification() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'water_test_channel',
       'Test Reminders',
       importance: Importance.max,
       priority: Priority.high,
-      icon: 'launcher_icon',
+      icon: _validatedIcon,
     );
 
-    const NotificationDetails notificationDetails = NotificationDetails(
+    final NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(),
+      iOS: const DarwinNotificationDetails(),
     );
 
     await _notificationsPlugin.show(

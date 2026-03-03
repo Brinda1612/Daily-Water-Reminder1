@@ -10,6 +10,7 @@ class WaterState extends Equatable {
   final double height; // in cm
   final bool onboardingCompleted;
   final List<WaterModel> history;
+  final String locale;
 
   const WaterState({
     this.todayIntake = 0,
@@ -20,6 +21,7 @@ class WaterState extends Equatable {
     this.height = 0,
     this.onboardingCompleted = false,
     this.history = const [],
+    this.locale = 'en',
   });
 
   double get progress => todayIntake / dailyGoal;
@@ -33,6 +35,7 @@ class WaterState extends Equatable {
     double? height,
     bool? onboardingCompleted,
     List<WaterModel>? history,
+    String? locale,
   }) {
     return WaterState(
       todayIntake: todayIntake ?? this.todayIntake,
@@ -43,6 +46,7 @@ class WaterState extends Equatable {
       height: height ?? this.height,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
       history: history ?? this.history,
+      locale: locale ?? this.locale,
     );
   }
 
@@ -56,5 +60,6 @@ class WaterState extends Equatable {
         height,
         onboardingCompleted,
         history,
+        locale,
       ];
 }

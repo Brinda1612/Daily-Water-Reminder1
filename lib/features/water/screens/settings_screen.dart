@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_task/l10n/app_localizations.dart';
 import '../bloc/water_bloc.dart';
 import '../bloc/water_event.dart';
 import '../bloc/water_state.dart';
@@ -12,23 +13,26 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<WaterBloc, WaterState>(
       builder: (context, state) {
+        final l10n = AppLocalizations.of(context)!;
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildSectionHeader('Goal Settings'),
+            _buildSectionHeader(l10n.goalSettings),
             _buildGoalTile(context, state),
             const Divider(),
-            _buildSectionHeader('Personal Info'),
-            _buildStatTile(context, 'Weight', '${state.weight} kg', Icons.monitor_weight_outlined),
-            _buildStatTile(context, 'Height', '${state.height} cm', Icons.height_outlined),
+            _buildSectionHeader(l10n.personalInfo),
+            _buildStatTile(context, l10n.weight, '${state.weight} ${l10n.kg}', Icons.monitor_weight_outlined),
+            _buildStatTile(context, l10n.height, '${state.height} ${l10n.cm}', Icons.height_outlined),
             const Divider(),
-            _buildSectionHeader('Notifications'),
+            _buildSectionHeader(l10n.language),
+            _buildLanguageTile(context, state),
+            const Divider(),
+            _buildSectionHeader(l10n.notifications),
             _buildNotificationTile(context, state),
             FutureBuilder<Map<String, bool>>(
               future: NotificationService.requestPermissions(),
               builder: (context, snapshot) {
                 final status = snapshot.data;
-                final notificationsOn = status?['notifications'] ?? false;
                 final exactAlarmOn = status?['exactAlarm'] ?? false;
                 
                 return Column(
@@ -61,28 +65,28 @@ class SettingsScreen extends StatelessWidget {
                         exactAlarmOn ? Icons.alarm_on_outlined : Icons.alarm_add_outlined,
                         color: exactAlarmOn ? Colors.green : Colors.orange,
                       ),
-                      title: const Text('Exact Alarm Permission'),
-                      subtitle: Text(exactAlarmOn ? 'Status: Granted (Precise reminders)' : 'Status: Required (For timely reminders)'),
+                      title: Text(l10n.exactAlarmPermission),
+                      subtitle: Text(exactAlarmOn ? l10n.statusGranted : l10n.statusRequired),
                       trailing: exactAlarmOn ? const Icon(Icons.check_circle_outline, color: Colors.green) : TextButton(
                         onPressed: () => NotificationService.openExactAlarmSettings(),
-                        child: const Text('GRANT'),
+                        child: Text(l10n.grant),
                       ),
                     ),
                     const Divider(height: 1),
                     _buildSettingsButton(
-                      'Battery Optimization',
+                      l10n.batteryOptimization,
                       'Avoid background kills (Recommended)',
                       Icons.battery_charging_full_outlined,
                       () => NotificationService.openBatteryOptimizationSettings(),
                     ),
                     _buildSettingsButton(
-                      'Test Alarm (10s)',
-                      'Schedule alarm for 10 seconds from now',
+                      l10n.testAlarm,
+                      l10n.testAlarmSub,
                       Icons.timer_outlined,
                       () async {
                         await NotificationService.showTestAlarm();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Test alarm scheduled for 10 seconds! Put app in background now.')),
+                          SnackBar(content: Text(l10n.testAlarmScheduled)),
                         );
                         // Force rebuild to update count
                         (context as Element).markNeedsBuild();
@@ -94,25 +98,25 @@ class SettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.bug_report_outlined),
-              title: const Text('Test Notification'),
+              title: Text(l10n.testNotification),
               subtitle: const Text('Send an immediate notification'),
               onTap: () async {
                 await NotificationService.showImmediateNotification();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Test notification sent! 💧')),
+                  SnackBar(content: Text('Test notification sent! 💧')),
                 );
               },
             ),
             const Divider(),
-            _buildSectionHeader('Account & Data'),
+            _buildSectionHeader(l10n.accountData),
             _buildNameTile(),
             _buildClearDataTile(context),
             const Divider(),
-            _buildSectionHeader('About'),
-            const ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('Version'),
-              trailing: Text('1.0.0'),
+            _buildSectionHeader(l10n.about),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: Text(l10n.version),
+              trailing: const Text('1.0.0'),
             ),
           ],
         );
@@ -136,32 +140,34 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildGoalTile(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: const Icon(Icons.flag_outlined),
-      title: const Text('Daily Intake Goal'),
-      subtitle: Text('${state.dailyGoal} ml'),
+      title: Text(l10n.dailyGoal),
+      subtitle: Text('${state.dailyGoal} ${l10n.ml}'),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => _showGoalDialog(context, state),
     );
   }
 
   void _showGoalDialog(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: state.dailyGoal.toString());
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Edit Daily Goal'),
+        title: Text(l10n.editGoal),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Enter goal in ml',
-            suffixText: 'ml',
+            suffixText: l10n.ml,
           ),
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('CANCEL')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () {
               final goal = int.tryParse(controller.text);
@@ -170,7 +176,7 @@ class SettingsScreen extends StatelessWidget {
                 Navigator.pop(dialogContext);
               }
             },
-            child: const Text('SAVE'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -178,6 +184,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildNotificationTile(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
     String frequencyText;
     if (state.reminderMinutes < 60) {
       frequencyText = 'Notify every ${state.reminderMinutes} minutes';
@@ -188,7 +195,7 @@ class SettingsScreen extends StatelessWidget {
 
     return ListTile(
       leading: const Icon(Icons.notifications_outlined),
-      title: const Text('Reminder Frequency'),
+      title: Text(l10n.reminderFrequency),
       subtitle: Text(frequencyText),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => _showFrequencyDialog(context, state),
@@ -196,6 +203,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showFrequencyDialog(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
     final intervals = [
       {'label': 'Every 1 minute (Test)', 'value': 1},
       {'label': 'Every 15 minutes', 'value': 15},
@@ -211,7 +219,7 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Reminder Frequency'),
+        title: Text(l10n.reminderFrequency),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: intervals.map((interval) {
@@ -243,8 +251,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showStatDialog(BuildContext context, String title) {
+    final l10n = AppLocalizations.of(context)!;
     final state = context.read<WaterBloc>().state;
-    final isWeight = title == 'Weight';
+    final isWeight = title == l10n.weight;
     final controller = TextEditingController(
       text: (isWeight ? state.weight : state.height).toString(),
     );
@@ -252,18 +261,18 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Update $title'),
+        title: Text('${l10n.save} $title'),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
             hintText: 'Enter $title',
-            suffixText: isWeight ? 'kg' : 'cm',
+            suffixText: isWeight ? l10n.kg : l10n.cm,
           ),
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('CANCEL')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () {
               final val = double.tryParse(controller.text);
@@ -274,7 +283,7 @@ class SettingsScreen extends StatelessWidget {
                 Navigator.pop(dialogContext);
               }
             },
-            child: const Text('SAVE'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -291,30 +300,32 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildClearDataTile(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-      title: const Text('Clear All Data', style: TextStyle(color: Colors.redAccent)),
+      title: Text(l10n.clearData, style: const TextStyle(color: Colors.redAccent)),
       onTap: () => _showClearConfirmation(context),
     );
   }
 
   void _showClearConfirmation(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Clear All Data?'),
-        content: const Text('This will delete all your water intake history. This action cannot be undone.'),
+        title: Text(l10n.clearDataTitle),
+        content: Text(l10n.clearDataSub),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('CANCEL')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () {
               context.read<WaterBloc>().add(ClearHistory());
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('History cleared successfully')),
+                SnackBar(content: Text(l10n.historyCleared)),
               );
             },
-            child: const Text('CLEAR', style: TextStyle(color: Colors.redAccent)),
+            child: Text(l10n.clearData, style: const TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -328,6 +339,53 @@ class SettingsScreen extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.open_in_new, size: 20),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildLanguageTile(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
+    String languageName = l10n.english;
+    if (state.locale == 'hi') languageName = l10n.hindi;
+    if (state.locale == 'gu') languageName = l10n.gujarati;
+
+    return ListTile(
+      leading: const Icon(Icons.language_outlined),
+      title: Text(l10n.language),
+      subtitle: Text(languageName),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => _showLanguageDialog(context, state),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
+    final languages = [
+      {'label': l10n.english, 'value': 'en'},
+      {'label': l10n.hindi, 'value': 'hi'},
+      {'label': l10n.gujarati, 'value': 'gu'},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.selectLanguage),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: languages.map((lang) {
+            return RadioListTile<String>(
+              title: Text(lang['label'] as String),
+              value: lang['value'] as String,
+              groupValue: state.locale,
+              onChanged: (val) {
+                if (val != null) {
+                  context.read<WaterBloc>().add(ChangeLanguage(val));
+                  Navigator.pop(dialogContext);
+                }
+              },
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 }

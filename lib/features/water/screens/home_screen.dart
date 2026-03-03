@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_task/l10n/app_localizations.dart';
 import '../bloc/water_bloc.dart';
 import '../bloc/water_event.dart';
 import '../bloc/water_state.dart';
@@ -42,15 +43,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           backgroundColor: const Color(0xFF2196F3),
           elevation: 0,
           toolbarHeight: 0,
-          bottom: const TabBar(
+          bottom: TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
             indicatorColor: Colors.white,
             indicatorSize: TabBarIndicatorSize.tab,
             tabs: [
-              Tab(text: 'Home', icon: Icon(Icons.water_drop)),
-              Tab(text: 'History', icon: Icon(Icons.history)),
-              Tab(text: 'Settings', icon: Icon(Icons.settings)),
+              Tab(text: AppLocalizations.of(context)!.home, icon: const Icon(Icons.water_drop)),
+              Tab(text: AppLocalizations.of(context)!.history, icon: const Icon(Icons.history)),
+              Tab(text: AppLocalizations.of(context)!.settings, icon: const Icon(Icons.settings)),
             ],
           ),
         ),
@@ -71,7 +72,7 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _controller = (context.findAncestorStateOfType<_HomeScreenState>()!)._controller;
+    final controller = (context.findAncestorStateOfType<_HomeScreenState>()!)._controller;
 
     return BlocBuilder<WaterBloc, WaterState>(
       builder: (context, state) {
@@ -85,7 +86,7 @@ class HomeView extends StatelessWidget {
                   children: [
                     _buildMascot(),
                     const SizedBox(width: 12),
-                    Expanded(child: _buildSpeechBubble()),
+                    Expanded(child: _buildSpeechBubble(context)),
                   ],
                 ),
               ),
@@ -101,13 +102,13 @@ class HomeView extends StatelessWidget {
                         context.read<WaterBloc>().add(const AddWater());
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Added ${state.selectedCupSize}ml! 💧'),
+                            content: Text('${AppLocalizations.of(context)!.added} ${state.selectedCupSize}${AppLocalizations.of(context)!.ml}! 💧'),
                             duration: const Duration(milliseconds: 500),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
                       },
-                      child: _buildAnimatedProgressCircle(state, _controller),
+                      child: _buildAnimatedProgressCircle(state, controller),
                     ),
                     // Cup Change Button near indicator
                     Positioned(
@@ -120,7 +121,7 @@ class HomeView extends StatelessWidget {
               ),
               
               const SizedBox(height: 40),
-              _buildGoalStatus(state),
+              _buildGoalStatus(context, state),
               const SizedBox(height: 30),
               _buildResetButton(context),
             ],
@@ -157,7 +158,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildSpeechBubble() {
+  Widget _buildSpeechBubble(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -165,9 +166,9 @@ class HomeView extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.blue[100]!),
       ),
-      child: const Text(
-        'Drink your glass of water slowly with some small sips',
-        style: TextStyle(color: Colors.black87, fontSize: 14),
+      child: Text(
+        AppLocalizations.of(context)!.sipSmallSips,
+        style: const TextStyle(color: Colors.black87, fontSize: 14),
       ),
     );
   }
@@ -225,7 +226,7 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${state.todayIntake} / ${state.dailyGoal} ml',
+                    '${state.todayIntake} / ${state.dailyGoal} ${AppLocalizations.of(context)!.ml}',
                     style: TextStyle(
                       fontSize: 14,
                       color: state.progress > 0.5 ? Colors.white70 : Colors.black54,
@@ -261,7 +262,7 @@ class HomeView extends StatelessWidget {
             const Icon(Icons.local_cafe_outlined, size: 20, color: Colors.blue),
             const SizedBox(width: 4),
             Text(
-              '${state.selectedCupSize} ml',
+              '${state.selectedCupSize} ${AppLocalizations.of(context)!.ml}',
               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
             ),
             const Icon(Icons.arrow_drop_up, color: Colors.blue),
@@ -277,7 +278,7 @@ class HomeView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Switch cup'),
+        title: Text(AppLocalizations.of(context)!.switchCup),
         content: SizedBox(
           width: double.maxFinite,
           child: GridView.builder(
@@ -300,7 +301,7 @@ class HomeView extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('CANCEL'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -326,7 +327,7 @@ class HomeView extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '$size ml',
+            '$size ${AppLocalizations.of(context)!.ml}',
             style: TextStyle(
               color: isSelected ? Colors.blue : Colors.black87,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -351,7 +352,7 @@ class HomeView extends StatelessWidget {
         children: [
           Icon(Icons.add_circle_outline, size: 40, color: Colors.grey[400]),
           const SizedBox(height: 4),
-          const Text('Customise', style: TextStyle(color: Colors.black87)),
+          Text(AppLocalizations.of(context)!.customise, style: const TextStyle(color: Colors.black87)),
         ],
       ),
     );
@@ -362,15 +363,15 @@ class HomeView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (customDialogContext) => AlertDialog(
-        title: const Text('Customise Cup'),
+        title: Text(AppLocalizations.of(context)!.customiseCup),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: 'Enter amount (ml)'),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterAmount),
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(customDialogContext), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(customDialogContext), child: Text(AppLocalizations.of(context)!.cancel)),
           TextButton(
             onPressed: () {
               final val = int.tryParse(controller.text);
@@ -380,14 +381,14 @@ class HomeView extends StatelessWidget {
                 Navigator.pop(context); // Close switch cup dialog
               }
             },
-            child: const Text('Set'),
+            child: Text(AppLocalizations.of(context)!.set),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGoalStatus(WaterState state) {
+  Widget _buildGoalStatus(BuildContext context, WaterState state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Container(
@@ -406,9 +407,9 @@ class HomeView extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildInfoItem('Daily Goal', '${state.dailyGoal} ml'),
+            _buildInfoItem(AppLocalizations.of(context)!.dailyGoalLabel, '${state.dailyGoal} ${AppLocalizations.of(context)!.ml}'),
             Container(width: 1, height: 40, color: Colors.grey[200]),
-            _buildInfoItem('Remaining', '${(state.dailyGoal - state.todayIntake).clamp(0, 100000)} ml'),
+            _buildInfoItem(AppLocalizations.of(context)!.remaining, '${(state.dailyGoal - state.todayIntake).clamp(0, 100000)} ${AppLocalizations.of(context)!.ml}'),
           ],
         ),
       ),
@@ -429,7 +430,7 @@ class HomeView extends StatelessWidget {
     return TextButton.icon(
       onPressed: () => context.read<WaterBloc>().add(ResetWater()),
       icon: const Icon(Icons.refresh, color: Colors.grey),
-      label: const Text('Reset Today', style: TextStyle(color: Colors.grey)),
+      label: Text(AppLocalizations.of(context)!.resetToday, style: const TextStyle(color: Colors.grey)),
     );
   }
 }

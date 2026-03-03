@@ -19,6 +19,7 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     on<SetReminderInterval>(_onSetReminderInterval);
     on<CompleteOnboarding>(_onCompleteOnboarding);
     on<ResetWater>(_onResetToday);
+    on<ChangeLanguage>(_onChangeLanguage);
   }
 
   Future<void> _onInit(InitWater event, Emitter<WaterState> emit) async {
@@ -28,6 +29,7 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     final weight = settingsBox.get('weight', defaultValue: 0.0) as double;
     final height = settingsBox.get('height', defaultValue: 0.0) as double;
     final onboardingCompleted = settingsBox.get('onboardingCompleted', defaultValue: false) as bool;
+    final locale = settingsBox.get('locale', defaultValue: 'en') as String;
     
     // Migration: Check for reminderHours and convert to minutes if reminderMinutes doesn't exist
     int reminderMinutes = settingsBox.get('reminderMinutes', defaultValue: -1) as int;
@@ -68,6 +70,7 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
       onboardingCompleted: onboardingCompleted,
       reminderMinutes: reminderMinutes,
       history: history,
+      locale: locale,
     ));
   }
 
@@ -176,5 +179,11 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
       todayIntake: newIntake,
       history: history,
     ));
+  }
+  
+  Future<void> _onChangeLanguage(ChangeLanguage event, Emitter<WaterState> emit) async {
+    final settingsBox = Hive.box(settingsBoxName);
+    await settingsBox.put('locale', event.locale);
+    emit(state.copyWith(locale: event.locale));
   }
 }

@@ -53,3 +53,11 @@ class CompleteOnboarding extends WaterEvent {
 }
 
 class ResetWater extends WaterEvent {}
+
+class ChangeLanguage extends WaterEvent {
+  final String locale;
+  const ChangeLanguage(this.locale);
+
+  @override
+  List<Object?> get props => [locale];
+}
