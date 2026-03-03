@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_task/l10n/app_localizations.dart';
+import '../../../app.dart';
 import '../bloc/water_bloc.dart';
 import '../bloc/water_event.dart';
 import '../bloc/water_state.dart';
@@ -7,7 +8,6 @@ import 'history_screen.dart';
 import 'settings_screen.dart';
 import 'wave_painter.dart';
 import 'package:flutter/material.dart';
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,13 +18,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     )..repeat();
   }
 
@@ -36,31 +37,71 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF2196F3),
-          elevation: 0,
-          toolbarHeight: 0,
-          bottom: TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            indicatorColor: Colors.white,
-            indicatorSize: TabBarIndicatorSize.tab,
-            tabs: [
-              Tab(text: AppLocalizations.of(context)!.home, icon: const Icon(Icons.water_drop)),
-              Tab(text: AppLocalizations.of(context)!.history, icon: const Icon(Icons.history)),
-              Tab(text: AppLocalizations.of(context)!.settings, icon: const Icon(Icons.settings)),
-            ],
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          HomeView(controller: _controller),
+          HistoryScreen(),
+          SettingsScreen(),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.water_drop_outlined, Icons.water_drop, AppLocalizations.of(context)!.home),
+                _buildNavItem(1, Icons.history_outlined, Icons.history, AppLocalizations.of(context)!.history),
+                _buildNavItem(2, Icons.settings_outlined, Icons.settings, AppLocalizations.of(context)!.settings),
+              ],
+            ),
           ),
         ),
-        body: const TabBarView(
-          children: [
-            HomeView(),
-            HistoryScreen(),
-            SettingsScreen(),
-          ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData outlinedIcon, IconData filledIcon, String label) {
+    final isSelected = _currentIndex == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _currentIndex = index),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isSelected ? filledIcon : outlinedIcon,
+                color: isSelected ? WaterReminderApp.primaryWater : Colors.grey[400],
+                size: 26,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected ? WaterReminderApp.primaryWater : Colors.grey[400],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -68,88 +109,95 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 }
 
 class HomeView extends StatelessWidget {
-  const HomeView({super.key});
+  final AnimationController controller;
+
+  const HomeView({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    final controller = (context.findAncestorStateOfType<_HomeScreenState>()!)._controller;
-
     return BlocBuilder<WaterBloc, WaterState>(
       builder: (context, state) {
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              // Mascot Header
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    _buildMascot(),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildSpeechBubble(context)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              // Progress Area
-              Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        context.read<WaterBloc>().add(const AddWater());
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${AppLocalizations.of(context)!.added} ${state.selectedCupSize}${AppLocalizations.of(context)!.ml}! 💧'),
-                            duration: const Duration(milliseconds: 500),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                      child: _buildAnimatedProgressCircle(state, controller),
-                    ),
-                    // Cup Change Button near indicator
-                    Positioned(
-                      right: -10,
-                      bottom: 20,
-                      child: _buildCupChangeButton(context, state),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 40),
-              _buildGoalStatus(context, state),
-              const SizedBox(height: 30),
-              _buildResetButton(context),
-            ],
+        return SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 20),
+                _buildMascotSection(context),
+                const SizedBox(height: 30),
+                _buildProgressCircle(context, state, controller),
+                const SizedBox(height: 40),
+                _buildGoalCard(context, state),
+                const SizedBox(height: 20),
+                _buildQuickActions(context, state),
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildMascot() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: Stack(
-        alignment: Alignment.center,
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(Icons.water_drop, size: 60, color: Colors.blue[300]),
-          const Positioned(
-            top: 25,
-            child: Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Daily Water',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                'Stay hydrated 💧',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMascotSection(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: WaterReminderApp.getGlassBox(),
+      child: Row(
+        children: [
+          _buildWaveMascot(),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.circle, size: 8, color: Colors.black),
-                SizedBox(width: 8),
-                Icon(Icons.circle, size: 8, color: Colors.black),
+                Text(
+                  'Hello! Stay Hydrated',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: WaterReminderApp.deepWater,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.sipSmallSips,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
               ],
             ),
           ),
@@ -158,202 +206,441 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildSpeechBubble(BuildContext context) {
+  Widget _buildWaveMascot() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: 60,
+      height: 60,
       decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue[100]!),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            WaterReminderApp.primaryWaterLight,
+            WaterReminderApp.primaryWater,
+          ],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: WaterReminderApp.primaryWater.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Text(
-        AppLocalizations.of(context)!.sipSmallSips,
-        style: const TextStyle(color: Colors.black87, fontSize: 14),
+      child: const Icon(
+        Icons.water_drop,
+        size: 36,
+        color: Colors.white,
       ),
     );
   }
 
-  Widget _buildAnimatedProgressCircle(WaterState state, AnimationController controller) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        return Container(
-          width: 280,
-          height: 280,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue.withOpacity(0.1),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
+  Widget _buildProgressCircle(BuildContext context, WaterState state, AnimationController controller) {
+    return GestureDetector(
+      onTap: () {
+        context.read<WaterBloc>().add(const AddWater());
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('+${state.selectedCupSize}${AppLocalizations.of(context)!.ml}'),
+              ],
+            ),
+            duration: const Duration(milliseconds: 800),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Wave Animation
-              ClipOval(
+        );
+      },
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 280,
+            height: 280,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: WaterReminderApp.primaryWater.withOpacity(0.1),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+          ),
+          AnimatedBuilder(
+            animation: controller,
+            builder: (context, child) {
+              return SizedBox(
+                width: 280,
+                height: 280,
                 child: CustomPaint(
-                  size: const Size(280, 280),
                   painter: WavePainter(
                     progress: state.progress,
                     waveOffset: controller.value * 2 * 3.14159,
                   ),
                 ),
-              ),
-              // Border
-              Container(
-                width: 280,
-                height: 280,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.blue.withOpacity(0.3), width: 8),
-                ),
-              ),
-              // Text Content
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${(state.progress * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: state.progress > 0.5 ? Colors.white : Colors.blue,
-                    ),
+              );
+            },
+          ),
+          Container(
+            width: 280,
+            height: 280,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: WaterReminderApp.primaryWater.withOpacity(0.3), width: 8),
+            ),
+          ),
+          Positioned(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${(state.progress * 100).toInt()}%',
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    color: state.progress > 0.5 ? Colors.white : WaterReminderApp.deepWater,
                   ),
-                  Text(
-                    '${state.todayIntake} / ${state.dailyGoal} ${AppLocalizations.of(context)!.ml}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: state.progress > 0.5 ? Colors.white70 : Colors.black54,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${state.todayIntake} / ${state.dailyGoal} ml',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: state.progress > 0.5 ? Colors.white70 : WaterReminderApp.primaryWaterDark,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.local_cafe, size: 16, color: WaterReminderApp.primaryWater),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${state.selectedCupSize} ml',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: WaterReminderApp.primaryWaterDark,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.touch_app, size: 14, color: Colors.grey[400]),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: -10,
+            bottom: 20,
+            child: GestureDetector(
+              onTap: () => _showCupSelectionSheet(context, state),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [WaterReminderApp.primaryWaterLight, WaterReminderApp.primaryWater],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: WaterReminderApp.primaryWater.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGoalCard(BuildContext context, WaterState state) {
+    final remaining = (state.dailyGoal - state.todayIntake).clamp(0, state.dailyGoal);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: WaterReminderApp.getGlassBox(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.dailyGoalLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${state.dailyGoal} ml',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: WaterReminderApp.deepWater,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: Colors.grey[200],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.remaining,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '$remaining ml',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: remaining == 0 ? Colors.green : WaterReminderApp.primaryWater,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCupChangeButton(BuildContext context, WaterState state) {
-    return GestureDetector(
-      onTap: () => _showCupSelectionDialog(context, state),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.local_cafe_outlined, size: 20, color: Colors.blue),
-            const SizedBox(width: 4),
-            Text(
-              '${state.selectedCupSize} ${AppLocalizations.of(context)!.ml}',
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-            ),
-            const Icon(Icons.arrow_drop_up, color: Colors.blue),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCupSelectionDialog(BuildContext context, WaterState state) {
-    final sizes = [100, 125, 150, 175, 200, 300, 400];
-    
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.switchCup),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: GridView.builder(
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.8,
-            ),
-            itemCount: sizes.length + 1,
-            itemBuilder: (context, index) {
-              if (index < sizes.length) {
-                final size = sizes[index];
-                return _buildCupItem(dialogContext, state, size);
-              } else {
-                return _buildCustomCupItem(dialogContext, state);
-              }
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('OK'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCupItem(BuildContext context, WaterState state, int size) {
-    final isSelected = state.selectedCupSize == size;
+  Widget _buildQuickActions(BuildContext context, WaterState state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _showCupSelectionSheet(context, state),
+              icon: const Icon(Icons.local_cafe_outlined),
+              label: const Text('Change Cup'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: WaterReminderApp.primaryWaterDark,
+                side: BorderSide(color: WaterReminderApp.primaryWater.withOpacity(0.3)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => context.read<WaterBloc>().add(ResetWater()),
+              icon: const Icon(Icons.refresh_outlined),
+              label: Text(AppLocalizations.of(context)!.resetToday),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.grey[600],
+                side: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCupSelectionSheet(BuildContext context, WaterState state) {
+    final sizes = [100, 125, 150, 175, 200, 250, 300, 400];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select Cup Size',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: WaterReminderApp.deepWater,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              GridView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  childAspectRatio: 1,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                ),
+                itemCount: sizes.length + 1,
+                itemBuilder: (itemContext, index) {
+                  if (index < sizes.length) {
+                    final size = sizes[index];
+                    final isSelected = state.selectedCupSize == size;
+                    return _buildCupItem(itemContext, state, size, isSelected);
+                  } else {
+                    return _buildCustomCupItem(itemContext, state);
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCupItem(BuildContext context, WaterState state, int size, bool isSelected) {
     return GestureDetector(
       onTap: () {
         context.read<WaterBloc>().add(SetCupSize(size));
+        Navigator.pop(context);
       },
-      child: Column(
-        children: [
-          Icon(
-            Icons.local_cafe_outlined,
-            size: 40,
-            color: isSelected ? Colors.blue : Colors.grey[400],
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [WaterReminderApp.primaryWaterLight, WaterReminderApp.primaryWater],
+                )
+              : null,
+          color: isSelected ? null : WaterReminderApp.primaryWater.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? WaterReminderApp.primaryWater : WaterReminderApp.primaryWater.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
           ),
-          const SizedBox(height: 4),
-          Text(
-            '$size ${AppLocalizations.of(context)!.ml}',
-            style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.black87,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.local_cafe,
+              size: 24,
+              color: isSelected ? Colors.white : WaterReminderApp.primaryWater,
             ),
-          ),
-          if (isSelected)
-            Container(
-              margin: const EdgeInsets.only(top: 2),
-              width: 20,
-              height: 2,
-              color: Colors.blue,
+            const SizedBox(height: 6),
+            Text(
+              '$size',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : WaterReminderApp.primaryWaterDark,
+              ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCustomCupItem(BuildContext context, WaterState state) {
     return GestureDetector(
-      onTap: () => _showCustomAmountDialog(context, state),
-      child: Column(
-        children: [
-          Icon(Icons.add_circle_outline, size: 40, color: Colors.grey[400]),
-          const SizedBox(height: 4),
-          Text(AppLocalizations.of(context)!.customise, style: const TextStyle(color: Colors.black87)),
-        ],
+      onTap: () {
+        Navigator.pop(context);
+        _showCustomAmountDialog(context, state);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: WaterReminderApp.primaryWater.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: WaterReminderApp.primaryWater.withOpacity(0.3),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_circle_outline,
+              size: 24,
+              color: WaterReminderApp.primaryWater,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Custom',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: WaterReminderApp.primaryWaterDark,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -362,75 +649,35 @@ class HomeView extends StatelessWidget {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (customDialogContext) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(AppLocalizations.of(context)!.customiseCup),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterAmount),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.enterAmount,
+            suffixText: 'ml',
+          ),
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(customDialogContext), child: Text(AppLocalizations.of(context)!.cancel)),
           TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          ElevatedButton(
             onPressed: () {
               final val = int.tryParse(controller.text);
               if (val != null && val > 0) {
                 context.read<WaterBloc>().add(SetCupSize(val));
-                Navigator.pop(customDialogContext); // Close custom dialog
-                Navigator.pop(context); // Close switch cup dialog
+                Navigator.pop(dialogContext);
               }
             },
             child: Text(AppLocalizations.of(context)!.set),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildGoalStatus(BuildContext context, WaterState state) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildInfoItem(AppLocalizations.of(context)!.dailyGoalLabel, '${state.dailyGoal} ${AppLocalizations.of(context)!.ml}'),
-            Container(width: 1, height: 40, color: Colors.grey[200]),
-            _buildInfoItem(AppLocalizations.of(context)!.remaining, '${(state.dailyGoal - state.todayIntake).clamp(0, 100000)} ${AppLocalizations.of(context)!.ml}'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(String label, String value) {
-    return Column(
-      children: [
-        Text(label, style: const TextStyle(color: Colors.black54, fontSize: 14)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-      ],
-    );
-  }
-
-  Widget _buildResetButton(BuildContext context) {
-    return TextButton.icon(
-      onPressed: () => context.read<WaterBloc>().add(ResetWater()),
-      icon: const Icon(Icons.refresh, color: Colors.grey),
-      label: Text(AppLocalizations.of(context)!.resetToday, style: const TextStyle(color: Colors.grey)),
     );
   }
 }
