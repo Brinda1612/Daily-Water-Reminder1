@@ -230,4 +230,25 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get custom => 'કસ્ટમ';
+
+  @override
+  String get name => 'નામ';
+
+  @override
+  String get gender => 'જાતિ';
+
+  @override
+  String get male => 'પુરુષ';
+
+  @override
+  String get female => 'સ્ત્રી';
+
+  @override
+  String get other => 'અન્ય';
+
+  @override
+  String get enterName => 'તમારું નામ દાખલ કરો';
+
+  @override
+  String get selectGender => 'તમારી જાતિ પસંદ કરો';
 }

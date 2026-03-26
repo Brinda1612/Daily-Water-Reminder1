@@ -229,4 +229,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get custom => 'कस्टम';
+
+  @override
+  String get name => 'नाम';
+
+  @override
+  String get gender => 'लिंग';
+
+  @override
+  String get male => 'पुरुष';
+
+  @override
+  String get female => 'महिला';
+
+  @override
+  String get other => 'अन्य';
+
+  @override
+  String get enterName => 'अपना नाम दर्ज करें';
+
+  @override
+  String get selectGender => 'अपना लिंग चुनें';
 }

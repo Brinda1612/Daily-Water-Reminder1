@@ -18,6 +18,7 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     on<ClearHistory>(_onClearHistory);
     on<SetReminderInterval>(_onSetReminderInterval);
     on<CompleteOnboarding>(_onCompleteOnboarding);
+    on<UpdateProfile>(_onUpdateProfile);
     on<ResetWater>(_onResetToday);
     on<ChangeLanguage>(_onChangeLanguage);
     on<DeleteCustomCup>(_onDeleteCustomCup);
@@ -134,10 +135,23 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     return weeklyData;
   }
 
+  int _calculateGoal(double weight, double height, String gender) {
+    double multiplier = gender.toLowerCase() == 'female' ? 31.0 : 35.0;
+    int goal = (weight * multiplier).round();
+
+    // Adjust for height (taller people need more water)
+    if (height > 180) goal += 200;
+    if (height < 150) goal -= 200;
+
+    return goal.clamp(1500, 4000); // Reasonable range
+  }
+
   Future<void> _onInit(InitWater event, Emitter<WaterState> emit) async {
     await Hive.openBox(settingsBoxName);
     final settingsBox = Hive.box(settingsBoxName);
 
+    final name = settingsBox.get('name', defaultValue: '') as String;
+    final gender = settingsBox.get('gender', defaultValue: 'Other') as String;
     final weight = settingsBox.get('weight', defaultValue: 0.0) as double;
     final height = settingsBox.get('height', defaultValue: 0.0) as double;
     final onboardingCompleted = settingsBox.get('onboardingCompleted', defaultValue: false) as bool;
@@ -184,6 +198,8 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     final weeklyData = _generateWeeklyData(history, goal);
 
     emit(state.copyWith(
+      name: name,
+      gender: gender,
       todayIntake: intake,
       dailyGoal: goal,
       weight: weight,
@@ -286,8 +302,10 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
 
   Future<void> _onCompleteOnboarding(CompleteOnboarding event, Emitter<WaterState> emit) async {
     final settingsBox = Hive.box(settingsBoxName);
-    final calculatedGoal = (event.weight * 35).round();
+    final calculatedGoal = _calculateGoal(event.weight, event.height, event.gender);
 
+    await settingsBox.put('name', event.name);
+    await settingsBox.put('gender', event.gender);
     await settingsBox.put('weight', event.weight);
     await settingsBox.put('height', event.height);
     await settingsBox.put('onboardingCompleted', true);
@@ -300,12 +318,44 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     if (data != null) {
       data.goal = calculatedGoal;
       await waterBox.put(today, data);
+    } else {
+       await waterBox.put(today, WaterModel(date: today, intake: 0, goal: calculatedGoal));
     }
 
     emit(state.copyWith(
+      name: event.name,
+      gender: event.gender,
       weight: event.weight,
       height: event.height,
       onboardingCompleted: true,
+      dailyGoal: calculatedGoal,
+    ));
+  }
+
+  Future<void> _onUpdateProfile(UpdateProfile event, Emitter<WaterState> emit) async {
+    final settingsBox = Hive.box(settingsBoxName);
+    final calculatedGoal = _calculateGoal(event.weight, event.height, event.gender);
+
+    await settingsBox.put('name', event.name);
+    await settingsBox.put('gender', event.gender);
+    await settingsBox.put('weight', event.weight);
+    await settingsBox.put('height', event.height);
+    await settingsBox.put('dailyGoal', calculatedGoal);
+
+    // Update today's entry in water_box
+    final waterBox = Hive.box<WaterModel>(boxName);
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final data = waterBox.get(today);
+    if (data != null) {
+      data.goal = calculatedGoal;
+      await waterBox.put(today, data);
+    }
+
+    emit(state.copyWith(
+      name: event.name,
+      gender: event.gender,
+      weight: event.weight,
+      height: event.height,
       dailyGoal: calculatedGoal,
     ));
   }

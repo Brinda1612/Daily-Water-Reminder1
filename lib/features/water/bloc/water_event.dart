@@ -44,12 +44,35 @@ class SetReminderInterval extends WaterEvent {
 }
 
 class CompleteOnboarding extends WaterEvent {
+  final String name;
+  final String gender;
   final double weight;
   final double height;
-  const CompleteOnboarding({required this.weight, required this.height});
+  const CompleteOnboarding({
+    required this.name,
+    required this.gender,
+    required this.weight,
+    required this.height,
+  });
 
   @override
-  List<Object?> get props => [weight, height];
+  List<Object?> get props => [name, gender, weight, height];
+}
+
+class UpdateProfile extends WaterEvent {
+  final String name;
+  final String gender;
+  final double weight;
+  final double height;
+  const UpdateProfile({
+    required this.name,
+    required this.gender,
+    required this.weight,
+    required this.height,
+  });
+
+  @override
+  List<Object?> get props => [name, gender, weight, height];
 }
 
 class ResetWater extends WaterEvent {}

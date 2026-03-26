@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../l10n/app_localizations.dart';
 import '../bloc/water_bloc.dart';
 import '../bloc/water_event.dart';
+import '../bloc/water_state.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,9 +14,11 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
+  final _nameController = TextEditingController();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String _selectedGender = 'Male';
   
   double _currentPage = 0;
 
@@ -32,14 +35,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _nameController.dispose();
     _weightController.dispose();
     _heightController.dispose();
     super.dispose();
   }
 
   void _nextPage() {
-    if (_currentPage < 2) {
-      if (_currentPage == 1) {
+    final int page = _currentPage.round();
+    if (page < 3) {
+      if (page == 1) {
+         if (_nameController.text.trim().isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter your name')));
+            return;
+         }
+      }
+      if (page == 2) {
         if (!_formKey.currentState!.validate()) return;
       }
       _pageController.nextPage(
@@ -52,9 +63,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _submit() {
+    final name = _nameController.text.trim();
     final weight = double.tryParse(_weightController.text) ?? 70.0;
     final height = double.tryParse(_heightController.text) ?? 170.0;
-    context.read<WaterBloc>().add(CompleteOnboarding(weight: weight, height: height));
+    context.read<WaterBloc>().add(CompleteOnboarding(
+      name: name,
+      gender: _selectedGender,
+      weight: weight,
+      height: height,
+    ));
   }
 
   @override
@@ -88,6 +105,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildWelcomeStep(),
+                      _buildProfileStep(),
                       _buildInputStep(),
                       _buildGoalStep(),
                     ],
@@ -113,7 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
-                value: (_currentPage + 1) / 3,
+                value: (_currentPage + 1) / 4,
                 backgroundColor: Colors.blue.withOpacity(0.1),
                 color: Colors.blue,
                 minHeight: 8,
@@ -122,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(width: 20),
           Text(
-            '${(_currentPage + 1).toInt()} / 3',
+            '${(_currentPage + 1).toInt()} / 4',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.blue,
@@ -184,6 +202,101 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Widget _buildProfileStep() {
+    final l10n = AppLocalizations.of(context)!;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.personalInfo,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.aboutYouSubtitle,
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+          const SizedBox(height: 32),
+          TextFormField(
+            controller: _nameController,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              labelText: l10n.name,
+              hintText: l10n.enterName,
+              prefixIcon: const Icon(Icons.person_outline, color: Colors.blue),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              filled: true,
+              fillColor: Colors.grey[50],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            l10n.gender,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildGenderOption(l10n.male, Icons.male),
+              const SizedBox(width: 12),
+              _buildGenderOption(l10n.female, Icons.female),
+              const SizedBox(width: 12),
+              _buildGenderOption(l10n.other, Icons.transgender),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderOption(String gender, IconData icon) {
+    final isSelected = _selectedGender == gender;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedGender = gender),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue : Colors.grey[50],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? Colors.blue : Colors.grey[200]!,
+              width: 2,
+            ),
+            boxShadow: isSelected
+                ? [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+                : [],
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey[400],
+                size: 30,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                gender,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey[600],
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   Widget _buildInputStep() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
@@ -231,31 +344,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required String suffix,
     required IconData icon,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: suffix,
+        prefixIcon: Icon(icon, color: Colors.blue),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        filled: true,
+        fillColor: Colors.grey[50],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        decoration: InputDecoration(
-          icon: Icon(icon, color: Colors.blue),
-          labelText: label,
-          suffixText: suffix,
-          border: InputBorder.none,
-          labelStyle: const TextStyle(fontWeight: FontWeight.normal, color: Colors.grey),
-        ),
-      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Required';
+        }
+        if (double.tryParse(value) == null) {
+          return 'Invalid number';
+        }
+        return null;
+      },
     );
   }
 
-  Widget _buildGoalStep() {
+  int _calculatePreviewGoal() {
     final weight = double.tryParse(_weightController.text) ?? 70.0;
-    final goalValue = (weight * 35).round();
+    final height = double.tryParse(_heightController.text) ?? 170.0;
+    double multiplier = _selectedGender.toLowerCase() == AppLocalizations.of(context)!.female.toLowerCase() ? 31.0 : 35.0;
+    int goal = (weight * multiplier).round();
+    if (height > 180) goal += 200;
+    if (height < 150) goal -= 200;
+    return goal.clamp(1500, 4000);
+  }
+
+  Widget _buildGoalStep() {
+    final l10n = AppLocalizations.of(context)!;
+    final goal = _calculatePreviewGoal();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
@@ -296,7 +421,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               children: [
                 Text(
-                  '$goalValue',
+                  '$goal',
                   style: const TextStyle(
                     fontSize: 64,
                     fontWeight: FontWeight.w900,
@@ -353,7 +478,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 shadowColor: Colors.blue.withOpacity(0.4),
               ),
               child: Text(
-                _currentPage < 2 ? AppLocalizations.of(context)!.next : AppLocalizations.of(context)!.finish,
+                _currentPage.round() < 3 ? AppLocalizations.of(context)!.next : AppLocalizations.of(context)!.finish,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),

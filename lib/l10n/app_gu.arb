@@ -70,5 +70,12 @@
   "yesterday": "ગઈકાલે",
   "intakeHistory": "પીવાનો ઈતિહાસ",
   "notSet": "સેટ નથી",
-  "custom": "કસ્ટમ"
+  "custom": "કસ્ટમ",
+  "name": "નામ",
+  "gender": "જાતિ",
+  "male": "પુરુષ",
+  "female": "સ્ત્રી",
+  "other": "અન્ય",
+  "enterName": "તમારું નામ દાખલ કરો",
+  "selectGender": "તમારી જાતિ પસંદ કરો"
 }

@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import '../model/water_model.dart';
 
 class WaterState extends Equatable {
+  final String gender;
+  final String name;
   final int todayIntake;
   final int dailyGoal;
   final int selectedCupSize;
@@ -17,6 +19,8 @@ class WaterState extends Equatable {
   final List<WeeklyData> weeklyData;
 
   const WaterState({
+    this.gender = 'Other',
+    this.name = '',
     this.todayIntake = 0,
     this.dailyGoal = 0,
     this.selectedCupSize = 200,
@@ -35,6 +39,8 @@ class WaterState extends Equatable {
   double get progress => dailyGoal > 0 ? todayIntake / dailyGoal : 0.0;
 
   WaterState copyWith({
+    String? name,
+    String? gender,
     int? todayIntake,
     int? dailyGoal,
     int? selectedCupSize,
@@ -50,6 +56,8 @@ class WaterState extends Equatable {
     List<WeeklyData>? weeklyData,
   }) {
     return WaterState(
+      name: name ?? this.name,
+      gender: gender ?? this.gender,
       todayIntake: todayIntake ?? this.todayIntake,
       dailyGoal: dailyGoal ?? this.dailyGoal,
       selectedCupSize: selectedCupSize ?? this.selectedCupSize,
@@ -68,6 +76,8 @@ class WaterState extends Equatable {
 
   @override
   List<Object?> get props => [
+        name,
+        gender,
         todayIntake,
         dailyGoal,
         selectedCupSize,

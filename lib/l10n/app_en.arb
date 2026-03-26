@@ -70,5 +70,12 @@
   "next": "Next",
   "finish": "Finish",
   "notSet": "Not Set",
-  "custom": "Custom"
+  "custom": "Custom",
+  "name": "Name",
+  "gender": "Gender",
+  "male": "Male",
+  "female": "Female",
+  "other": "Other",
+  "enterName": "Enter your name",
+  "selectGender": "Select your gender"
 }

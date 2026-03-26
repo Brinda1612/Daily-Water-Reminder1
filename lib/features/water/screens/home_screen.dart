@@ -21,7 +21,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _controller;
-  late AnimationController _celebrationController;
   int _currentIndex = 0;
   bool _hasRequestedPermissions = false;
 
@@ -33,10 +32,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: const Duration(seconds: 3),
     )..repeat();
 
-    _celebrationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2500),
-    );
 
     // Request permissions after a short delay when on home screen
     if (!_hasRequestedPermissions) {
@@ -61,7 +56,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _controller.dispose();
-    _celebrationController.dispose();
     super.dispose();
   }
 
@@ -70,12 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _triggerCelebration() {
-    _celebrationController.forward(from: 0);
-    for (int i = 0; i < 5; i++) {
-      Future.delayed(Duration(milliseconds: i * 150), () {
-        SystemSound.play(SystemSoundType.alert);
-      });
-    }
+    // Celebration removed as requested
   }
 
   @override
@@ -87,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         children: [
           HomeView(
             controller: _controller,
-            celebrationController: _celebrationController,
             onWaterSound: _playWaterSound,
             onCelebration: _triggerCelebration,
           ),
@@ -160,14 +148,12 @@ class HomeView extends StatefulWidget {
   static const List<int> standardCupSizes = [100, 125, 150, 175, 200, 250, 300, 400];
   
   final AnimationController controller;
-  final AnimationController celebrationController;
   final VoidCallback onWaterSound;
   final VoidCallback onCelebration;
 
   const HomeView({
     super.key,
     required this.controller,
-    required this.celebrationController,
     required this.onWaterSound,
     required this.onCelebration,
   });
@@ -177,61 +163,22 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  bool _hasCelebrated = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final state = context.read<WaterBloc>().state;
-    if (state.progress >= 1.0 && !_hasCelebrated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && state.progress >= 1.0) {
-          widget.onCelebration();
-          setState(() => _hasCelebrated = true);
-        }
-      });
-    } else if (state.progress < 1.0) {
-      _hasCelebrated = false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WaterBloc, WaterState>(
       builder: (context, state) {
-        if (state.progress >= 1.0 && !_hasCelebrated) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && !_hasCelebrated) {
-              widget.onCelebration();
-              setState(() => _hasCelebrated = true);
-            }
-          });
-        } else if (state.progress < 1.0) {
-          _hasCelebrated = false;
-        }
-
         return SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    _buildHeader(context),
-                    const SizedBox(height: 20),
-                    _buildMascotSection(context),
-                    const SizedBox(height: 30),
-                    _buildProgressCircle(context, state, widget.controller),
-                    const SizedBox(height: 40),
-                    _buildGoalCard(context, state),
-                    const SizedBox(height: 20),
-                    _buildQuickActions(context, state),
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-              // Celebration overlay
-              _buildCelebrationOverlay(),
+              _buildHeader(context, state),
+              const SizedBox(height: 10),
+              _buildMascotSection(context, state),
+              const SizedBox(height: 20),
+              _buildProgressCircle(context, state, widget.controller),
+              const SizedBox(height: 20),
+              _buildGoalCard(context, state),
+              const SizedBox(height: 16),
+              _buildQuickActions(context, state),
             ],
           ),
         );
@@ -239,122 +186,10 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildCelebrationOverlay() {
-    return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: widget.celebrationController,
-        builder: (context, child) {
-          // Only show celebration overlay when animation is actually running
-          if (widget.celebrationController.value <= 0.01) {
-            return const SizedBox.shrink();
-          }
 
-          return Opacity(
-            opacity: 1 - widget.celebrationController.value.clamp(0.0, 0.8),
-            child: IgnorePointer(
-              child: Stack(
-                children: [
-                  // Center explosion point
-                  Center(
-                    child: _buildExplosionCenter(),
-                  ),
-                  // Confetti particles from center
-                  ...List.generate(60, (index) {
-                    final random = Random(index);
-                    final angle = random.nextDouble() * 2 * pi;
-                    final distance = 100 + random.nextDouble() * 200;
-                    final size = 6.0 + random.nextDouble() * 12;
-                    final delay = random.nextDouble() * 0.3;
-                    final speed = 0.5 + random.nextDouble() * 0.5;
-                    final color = [
-                      WaterReminderApp.primaryWater,
-                      WaterReminderApp.primaryWaterLight,
-                      WaterReminderApp.primaryWaterDark,
-                      Colors.cyan,
-                      Colors.lightBlue,
-                      Colors.lightBlueAccent,
-                      Colors.blueAccent,
-                      Colors.teal,
-                      Colors.white,
-                      Colors.amber,
-                      Colors.yellow,
-                      Colors.orange,
-                      Colors.pinkAccent,
-                      Colors.greenAccent,
-                      Colors.lime,
-                    ][random.nextInt(15)];
-
-                    return _ConfettiParticle(
-                      angle: angle,
-                      distance: distance,
-                      size: size,
-                      color: color,
-                      delay: delay,
-                      speed: speed,
-                      controller: widget.celebrationController,
-                    );
-                  }),
-                  // Stars/sparkles
-                  ...List.generate(20, (index) {
-                    final random = Random(index + 100);
-                    final x = random.nextDouble();
-                    final y = random.nextDouble();
-                    final size = 8.0 + random.nextDouble() * 16;
-                    final delay = random.nextDouble() * 0.5;
-
-                    return Positioned(
-                      left: x * MediaQuery.of(context).size.width,
-                      top: y * MediaQuery.of(context).size.height * 0.6,
-                      child: _SparkleParticle(
-                        size: size,
-                        delay: delay,
-                        controller: widget.celebrationController,
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildExplosionCenter() {
-    return AnimatedBuilder(
-      animation: widget.celebrationController,
-      builder: (context, child) {
-        final scale = widget.celebrationController.value * 3;
-        final opacity = 1 - widget.celebrationController.value;
-
-        return Transform.scale(
-          scale: scale,
-          child: Opacity(
-            opacity: opacity,
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    Colors.white,
-                    WaterReminderApp.primaryWater.withOpacity(0.5),
-                    WaterReminderApp.primaryWater.withOpacity(0.2),
-                  ],
-                ),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, WaterState state) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -362,9 +197,9 @@ class _HomeViewState extends State<HomeView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Daily Water',
+                state.name.isNotEmpty ? 'Hello, ${state.name}!' : 'Daily Water',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 28,
+                  fontSize: 26,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -382,7 +217,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildMascotSection(BuildContext context) {
+  Widget _buildMascotSection(BuildContext context, WaterState state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
@@ -394,7 +229,7 @@ class _HomeViewState extends State<HomeView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hello! Stay Hydrated',
+                  'Great day, ${state.name.isNotEmpty ? state.name : "Friend"}!',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -531,8 +366,8 @@ class _HomeViewState extends State<HomeView> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isGoalReached ? Colors.green : WaterReminderApp.primaryWater.withOpacity(0.3),
-                width: isGoalReached ? 10 : 8,
+                color: WaterReminderApp.primaryWater.withOpacity(0.3),
+                width: 8,
               ),
             ),
           ),
@@ -637,8 +472,8 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
           Positioned(
-            right: -10,
-            bottom: 20,
+            right: 0,
+            bottom: 30,
             child: GestureDetector(
               onTap: () => _showCupSelectionSheet(context, context.read<WaterBloc>().state),
               child: Container(
@@ -994,157 +829,6 @@ class _HomeViewState extends State<HomeView> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ConfettiParticle extends StatelessWidget {
-  final double angle;
-  final double distance;
-  final double size;
-  final Color color;
-  final double delay;
-  final double speed;
-  final AnimationController controller;
-
-  const _ConfettiParticle({
-    required this.angle,
-    required this.distance,
-    required this.size,
-    required this.color,
-    required this.delay,
-    required this.speed,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final animValue = (controller.value - delay).clamp(0.0, 1.0) / (1 - delay);
-
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        if (controller.value < delay) return const SizedBox.shrink();
-
-        final progress = animValue * animValue; // Easing
-        final currentDistance = progress * distance;
-
-        return Transform.translate(
-          offset: Offset(
-            cos(angle) * currentDistance,
-            sin(angle) * currentDistance - progress * distance * 0.5,
-          ),
-          child: Transform.rotate(
-            angle: progress * pi * 6,
-            child: Opacity(
-              opacity: 1 - progress,
-              child: Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SparkleParticle extends StatefulWidget {
-  final double size;
-  final double delay;
-  final AnimationController controller;
-
-  const _SparkleParticle({
-    required this.size,
-    required this.delay,
-    required this.controller,
-  });
-
-  @override
-  State<_SparkleParticle> createState() => _SparkleParticleState();
-}
-
-class _SparkleParticleState extends State<_SparkleParticle>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _sparkleController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _sparkleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _sparkleController,
-        curve: Curves.easeOutBack,
-      ),
-    );
-
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _sparkleController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    Future.delayed(Duration(milliseconds: (widget.delay * 2500).toInt()), () {
-      if (mounted) {
-        _sparkleController.forward();
-      }
-      Future.delayed(const Duration(milliseconds: 400), () {
-        if (mounted) _sparkleController.reverse();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _sparkleController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _sparkleController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _opacityAnimation.value,
-            child: Container(
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.amber,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.amber.withOpacity(0.8),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.star,
-                size: widget.size * 0.6,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

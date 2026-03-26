@@ -167,6 +167,22 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _buildInfoTile(
             context,
+            icon: Icons.person_outline,
+            title: l10n.name,
+            value: state.name.isNotEmpty ? state.name : l10n.notSet,
+            onTap: () => _showNameDialog(context, state),
+          ),
+          const Divider(height: 20),
+          _buildInfoTile(
+            context,
+            icon: Icons.transgender_outlined,
+            title: l10n.gender,
+            value: state.gender,
+            onTap: () => _showGenderDialog(context, state),
+          ),
+          const Divider(height: 20),
+          _buildInfoTile(
+            context,
             icon: Icons.monitor_weight_outlined,
             title: l10n.weight,
             value: state.weight > 0 ? '$displayWeight ${l10n.kg}' : l10n.notSet,
@@ -298,6 +314,16 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.favorite_outline,
             title: 'Made with',
             value: '❤️ for healthy living',
+          ),
+          const Divider(height: 20),
+          _buildInfoTile(
+            context,
+            icon: Icons.privacy_tip_outlined,
+            title: 'Privacy Policy',
+            value: '',
+            onTap: () {
+              Navigator.pushNamed(context, '/privacy_policy');
+            },
           ),
         ],
       ),
@@ -445,6 +471,76 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  void _showNameDialog(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: state.name);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Edit ${l10n.name}'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: l10n.enterName,
+            filled: true,
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                context.read<WaterBloc>().add(UpdateProfile(
+                  name: controller.text.trim(),
+                  gender: state.gender,
+                  weight: state.weight,
+                  height: state.height,
+                ));
+                Navigator.pop(dialogContext);
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGenderDialog(BuildContext context, WaterState state) {
+    final l10n = AppLocalizations.of(context)!;
+    final genders = [l10n.male, l10n.female, l10n.other];
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(l10n.selectGender),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: genders.map((gender) => ListTile(
+            title: Text(gender),
+            leading: Icon(
+              gender == l10n.male ? Icons.male : (gender == l10n.female ? Icons.female : Icons.transgender),
+              color: WaterReminderApp.primaryWater,
+            ),
+            trailing: state.gender == gender ? const Icon(Icons.check, color: Colors.blue) : null,
+            onTap: () {
+              context.read<WaterBloc>().add(UpdateProfile(
+                name: state.name,
+                gender: gender,
+                weight: state.weight,
+                height: state.height,
+              ));
+              Navigator.pop(dialogContext);
+            },
+          )).toList(),
+        ),
+      ),
+    );
+  }
+
   void _showStatDialog(BuildContext context, String title, double value, bool isWeight) {
     final l10n = AppLocalizations.of(context)!;
     final state = context.read<WaterBloc>().state;
@@ -471,9 +567,12 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () {
               final val = double.tryParse(controller.text);
               if (val != null && val > 0) {
-                final weight = isWeight ? val : state.weight;
-                final height = isWeight ? state.height : val;
-                context.read<WaterBloc>().add(CompleteOnboarding(weight: weight, height: height));
+                context.read<WaterBloc>().add(UpdateProfile(
+                  name: state.name,
+                  gender: state.gender,
+                  weight: isWeight ? val : state.weight,
+                  height: isWeight ? state.height : val,
+                ));
                 Navigator.pop(dialogContext);
               }
             },
