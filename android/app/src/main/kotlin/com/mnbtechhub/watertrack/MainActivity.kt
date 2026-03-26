@@ -1,4 +1,4 @@
-package com.example.daily_water_reminder
+package com.mnbtechhub.watertrack
 
 import android.app.AlarmManager
 import android.content.ActivityNotFoundException
@@ -13,7 +13,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     companion object {
-        private const val CHANNEL = "com.example.daily_water_reminder/settings"
+        private const val CHANNEL = "com.mnbtechhub.watertrack/settings"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

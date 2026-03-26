@@ -9,7 +9,7 @@ class NotificationService {
   static const String _fallbackIcon = 'ic_launcher';
   static String _validatedIcon = _notificationIcon;
 
-  static const MethodChannel _settingsChannel = MethodChannel('com.example.daily_water_reminder/settings');
+  static const MethodChannel _settingsChannel = MethodChannel('com.mnbtechhub.watertrack/settings');
   static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
@@ -110,9 +110,9 @@ class NotificationService {
 
   static Future<void> _createChannel() async {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'water_reminder_channel',
-      'Water Reminders',
-      description: 'Stay hydrated with timely reminders',
+      'watertrack_channel',
+      'WaterTrack Reminders',
+      description: 'Stay hydrated with WaterTrack',
       importance: Importance.max,
       playSound: true,
       enableVibration: true,
@@ -132,9 +132,9 @@ class NotificationService {
     final int minutes = intervalMinutes ?? (intervalHours ?? 1) * 60;
 
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'water_reminder_channel',
-      'Water Reminders',
-      channelDescription: 'Stay hydrated with timely reminders',
+      'watertrack_channel',
+      'WaterTrack Reminders',
+      channelDescription: 'Stay hydrated with WaterTrack',
       importance: Importance.max,
       priority: Priority.high,
       icon: _validatedIcon,
