@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             ),
             const SizedBox(height: 32),
             const Text(
-              'Daily Water',
+              'WaterTrack',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

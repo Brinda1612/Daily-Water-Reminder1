@@ -1,4 +1,4 @@
-# Daily Water Reminder — App Documentation
+# WaterTrack — App Documentation
 
 ## Overview
 

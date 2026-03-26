@@ -1,5 +1,5 @@
 {
-  "appTitle": "દૈનિક પાણી રીમાઇન્ડર",
+  "appTitle": "WaterTrack",
   "settings": "સેટિંગ્સ",
   "goalSettings": "ધ્યેય સેટિંગ્સ",
   "personalInfo": "વ્યક્તિગત માહિતી",
@@ -52,7 +52,7 @@
   "accountData": "ખાતું અને ડેટા",
   "about": "વિશે",
   "version": "સંસ્કરણ",
-  "onboardingWelcome": "હાઇડ્રેટેડ રહો, સ્વસ્થ રહો",
+  "onboardingWelcome": "WaterTrack માં તમારું સ્વાગત છે",
   "onboardingSubtitle": "તમારા દૈનિક પાણીના સેવનને ટ્રૅક કરો અને તમારા શરીરને શ્રેષ્ઠ રીતે કાર્યરત રાખો.",
   "aboutYou": "તમારા વિશે",
   "aboutYouSubtitle": "આ અમને તમારા ધ્યેયની ગણતરી કરવામાં મદદ કરે છે.",

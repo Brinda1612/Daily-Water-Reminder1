@@ -197,7 +197,7 @@ class _HomeViewState extends State<HomeView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                state.name.isNotEmpty ? 'Hello, ${state.name}!' : 'Daily Water',
+                state.name.isNotEmpty ? 'Hello, ${state.name}!' : 'WaterTrack',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,

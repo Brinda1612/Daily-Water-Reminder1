@@ -62,7 +62,7 @@ class _WaterReminderAppState extends State<WaterReminderApp> {
     return BlocBuilder<WaterBloc, WaterState>(
       builder: (context, state) {
         return MaterialApp(
-          title: 'Daily Water Reminder',
+          title: 'WaterTrack',
           debugShowCheckedModeBanner: false,
           locale: Locale(state.locale),
           localizationsDelegates: const [

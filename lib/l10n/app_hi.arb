@@ -1,5 +1,5 @@
 {
-  "appTitle": "दैनिक पानी अनुस्मारक",
+  "appTitle": "WaterTrack",
   "settings": "सेटिंग्स",
   "goalSettings": "लक्ष्य सेटिंग्स",
   "personalInfo": "व्यक्तिगत जानकारी",
@@ -65,7 +65,7 @@
   "today": "आज",
   "yesterday": "कल",
   "intakeHistory": "सेवन इतिहास",
-  "onboardingWelcome": "वॉटर रिमाइंडर में आपका स्वागत है",
+  "onboardingWelcome": "WaterTrack में आपका स्वागत है",
   "onboardingSubtitle": "व्यक्तिगत पानी के लक्ष्यों और रिमाइंडर्स के साथ स्वस्थ और हाइड्रेटेड रहें।",
   "aboutYou": "आपके बारे में",
   "aboutYouSubtitle": "हम इसका उपयोग आपके दैनिक लक्ष्य की गणना करने के लिए करेंगे",

@@ -15,42 +15,57 @@ class PrivacyPolicyScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSection(
               'Privacy Policy',
-              'Last updated: March 26, 2026\n\nYour privacy is important to us. This Privacy Policy explains how Daily Water Reminder ("we", "us", or "our") collects, uses, and protects your information when you use our mobile application.',
+              'Last updated: March 26, 2026\n\n'
+                  'Your privacy is important to us. This Privacy Policy explains how Water Track ("we", "us", or "our") handles your information when you use our mobile application.',
             ),
+
             _buildSection(
               '1. Information Collection',
-              'We collect minimal personal information to provide you with a personalized experience:\n\n'
-              '• Name and Gender: To personalize your dashboard and reminders.\n'
-              '• Physical Stats (Weight and Height): To calculate your recommended daily water intake.\n'
-              '• Water Intake History: To track your progress and provide statistics.\n\n'
-              'All this data is stored LOCALLY on your device using Hive database. We do not upload this data to any external servers.',
+              'We collect minimal information to provide app functionality:\n\n'
+                  '• Name: To personalize your experience.\n'
+                  '• Height and Weight: To calculate your daily water intake.\n\n'
+                  'All data is stored locally on your device using local storage. We do not send or store this data on any external servers.',
             ),
+
             _buildSection(
               '2. Usage of Information',
-              'The information we collect is used solely within the app to:\n\n'
-              '• Calculate your hydration needs.\n'
-              '• Send you timely reminders.\n'
-              '• Display your health progress and streaks.',
+              'The information is used only within the app to:\n\n'
+                  '• Calculate your hydration needs.\n'
+                  '• Track your daily water intake.',
             ),
+
             _buildSection(
               '3. Data Security',
-              'Since your data is stored locally on your device, its security depends on your device\'s security. We recommend using built-in device protection like PIN or Biometrics.',
+              'All data is stored locally on your device. We recommend using device security such as PIN or biometric lock.',
             ),
+
             _buildSection(
-              '4. Changes to This Policy',
-              'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.',
+              '4. Third-Party Services',
+              'Water Track does not use any third-party services that collect user data.',
             ),
+
             _buildSection(
-              '5. Contact Us',
-              'If you have any questions about this Privacy Policy, please contact us at support@dailywater.com',
+              '5. Children\'s Privacy',
+              'This app does not knowingly collect personal information from children under the age of 13.',
             ),
-            const SizedBox(height: 40),
+
+            _buildSection(
+              '6. Changes to This Policy',
+              'We may update this Privacy Policy from time to time. Changes will be reflected within the app.',
+            ),
+
+            _buildSection(
+              '7. Contact Us',
+              'If you have any questions, contact us at:\n\nbrindaponkiya1000@gmail.com',
+            ),
+
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -59,25 +74,25 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   Widget _buildSection(String title, String content) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
+      padding: const EdgeInsets.only(bottom: 18.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
             style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 16, // 🔽 smaller title
+              fontWeight: FontWeight.w600,
               color: WaterReminderApp.deepWater,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             content,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 13, // 🔽 smaller content font
               color: Colors.grey[700],
-              height: 1.5,
+              height: 1.4,
             ),
           ),
         ],

@@ -9,7 +9,7 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'दैनिक पानी अनुस्मारक';
+  String get appTitle => 'WaterTrack';
 
   @override
   String get settings => 'सेटिंग्स';
@@ -199,7 +199,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get intakeHistory => 'सेवन इतिहास';
 
   @override
-  String get onboardingWelcome => 'वॉटर रिमाइंडर में आपका स्वागत है';
+  String get onboardingWelcome => 'WaterTrack में आपका स्वागत है';
 
   @override
   String get onboardingSubtitle =>

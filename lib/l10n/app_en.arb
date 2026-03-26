@@ -1,5 +1,5 @@
 {
-  "appTitle": "Daily Water Reminder",
+  "appTitle": "WaterTrack",
   "settings": "Settings",
   "goalSettings": "Goal Settings",
   "personalInfo": "Personal Info",
@@ -61,7 +61,7 @@
   "today": "Today",
   "yesterday": "Yesterday",
   "intakeHistory": "Intake History",
-  "onboardingWelcome": "Welcome to Water Reminder",
+  "onboardingWelcome": "Welcome to WaterTrack",
   "onboardingSubtitle": "Stay healthy and hydrated with personalized water goals and reminders.",
   "aboutYou": "About You",
   "aboutYouSubtitle": "We'll use this to calculate your daily goal",

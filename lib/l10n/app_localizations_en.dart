@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Daily Water Reminder';
+  String get appTitle => 'WaterTrack';
 
   @override
   String get settings => 'Settings';
@@ -199,7 +199,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get intakeHistory => 'Intake History';
 
   @override
-  String get onboardingWelcome => 'Welcome to Water Reminder';
+  String get onboardingWelcome => 'Welcome to WaterTrack';
 
   @override
   String get onboardingSubtitle =>

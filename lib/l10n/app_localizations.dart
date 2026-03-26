@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Daily Water Reminder'**
+  /// **'WaterTrack'**
   String get appTitle;
 
   /// No description provided for @settings.
@@ -475,7 +475,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcome.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Water Reminder'**
+  /// **'Welcome to WaterTrack'**
   String get onboardingWelcome;
 
   /// No description provided for @onboardingSubtitle.

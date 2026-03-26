@@ -9,7 +9,7 @@ class AppLocalizationsGu extends AppLocalizations {
   AppLocalizationsGu([String locale = 'gu']) : super(locale);
 
   @override
-  String get appTitle => 'દૈનિક પાણી રીમાઇન્ડર';
+  String get appTitle => 'WaterTrack';
 
   @override
   String get settings => 'સેટિંગ્સ';
@@ -200,7 +200,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get intakeHistory => 'પીવાનો ઈતિહાસ';
 
   @override
-  String get onboardingWelcome => 'હાઇડ્રેટેડ રહો, સ્વસ્થ રહો';
+  String get onboardingWelcome => 'WaterTrack માં તમારું સ્વાગત છે';
 
   @override
   String get onboardingSubtitle =>
